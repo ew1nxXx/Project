@@ -1,1 +1,4 @@
-Test readme
+My semester project
+This project is a sorting visualizer written in Python using the tkinter library. It displays a list of numbers as vertical bars and animates how different sorting algorithms rearrange the data step by step. Instead of only showing the final sorted result, the program makes it possible to see how the algorithms work internally.
+The user can generate a random array, choose a sorting algorithm, and adjust the size of the array and the animation speed. During sorting, active elements are highlighted so it’s easier to follow what the algorithm is doing. The visualizer includes Insertion Sort, Merge Sort, Quick Sort, and Heap Sort, allowing comparison between simpler and more advanced algorithms.
+Each sorting algorithm is implemented so that it pauses after important steps, which allows the animation to update smoothly. The main goal of this project is to make sorting algorithms easier to understand by visualizing.
