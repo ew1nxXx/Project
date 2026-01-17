@@ -29,7 +29,7 @@ def color_all_bars(color):
     for idx in range(len(bar_values)):
         draw_bar(idx, bar_values[idx], color)
 
-# A very classic insertion sort implementation
+#insertion sort implementation
 def insertion_sort():
     for i in range(1, len(bar_values)):
         current = bar_values[i]
@@ -46,7 +46,7 @@ def insertion_sort():
         draw_bar(j + 1, current, BAR_COLOR)
     color_all_bars(BAR_DONE)
 
-# Merge sort uses a recursive breakdown
+# Merge sort
 def merge_sort():
     yield from merge_sort_helper(0, len(bar_values) - 1)
     color_all_bars(BAR_DONE)
@@ -126,11 +126,11 @@ def partition(low, high):
 def heap_sort():
     n = len(bar_values)
 
-    # Build the heap (in-place, yay)
+    #the heap
     for i in range(n // 2 - 1, -1, -1):
         yield from heapify(n, i)
 
-    # Extract elements one by one
+    # Extracting elements one by one
     for end in range(n - 1, 0, -1):
         bar_values[0], bar_values[end] = bar_values[end], bar_values[0]
         draw_bar(0, bar_values[0], BAR_ACTIVE)
@@ -161,7 +161,7 @@ def heapify(size, root):
         draw_bar(largest, bar_values[largest], BAR_COLOR)
         yield from heapify(size, largest)
 
-# Starts sorting animation
+#sorting animation
 def begin_sort():
     global sort_process
     color_all_bars(BAR_COLOR)
@@ -186,7 +186,7 @@ def animate_step():
         except StopIteration:
             sort_process = None
 
-# Generates the bars with randomized values
+#bars with randomized values
 def reset_bars():
     global bars, bar_values, bar_width, sort_process
     sort_process = None
@@ -200,7 +200,7 @@ def reset_bars():
     random.shuffle(data)
 
     for i, val in enumerate(data):
-        height = val * (HEIGHT // num_bars)  # Just a scaling factor
+        height = val * (HEIGHT // num_bars)  #scaling factor
         bar_values.append(height)
         bars.append(canvas.create_rectangle(0, 0, 0, 0, fill=BAR_COLOR))
         draw_bar(i, height, BAR_COLOR)
@@ -215,17 +215,17 @@ canvas.pack()
 controls = tk.Frame(root)
 controls.pack()
 
-# Generate new dataset
+#new dataset
 tk.Button(controls, text="Generate", width=12, command=reset_bars).grid(row=0, column=0)
 
 algorithm_choice = tk.StringVar()
 algorithm_choice.set(ALGORITHMS[0])
 tk.OptionMenu(controls, algorithm_choice, *ALGORITHMS).grid(row=0, column=1)
 
-# Start sorting
+# sorting begin
 tk.Button(controls, text="Sort", width=12, command=begin_sort).grid(row=0, column=2)
 
-# Size and speed sliders
+# size and speed sliders
 size_slider = tk.Scale(controls, from_=10, to=80, orient=HORIZONTAL, label="Size")
 size_slider.set(30)
 size_slider.grid(row=1, column=0, columnspan=2)
