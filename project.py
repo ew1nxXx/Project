@@ -14,6 +14,13 @@ BAR_DONE = "#32CD32"
 ALGORITHMS = ["Insertion Sort", "Merge Sort", "Quick Sort", "Heap Sort"]
 
 class SortingVisualizer:
+    """
+    SortingVisualizer is the main class that manages the GUI,
+    program state, and sorting animations.
+
+    It creates the tkinter window, draws the bars, and runs
+    different sorting algorithms step by step using generators.
+    """
     def __init__(self):
         self.bars = []
         self.bar_values = []
@@ -49,6 +56,13 @@ class SortingVisualizer:
         self.root.mainloop()
 
     def draw_bar(self,index, value, color):
+        """
+    Draws or updates a single bar on the canvas.
+
+    index: position of the bar
+    value: height of the bar
+    color: fill color of the bar
+    """
         x_start = index * self.bar_width
         x_end = x_start + self.bar_width
         y_end = HEIGHT
@@ -62,6 +76,10 @@ class SortingVisualizer:
 
 #insertion sort implementation
     def insertion_sort(self):
+        """
+    Generator implementation of insertion sort.
+    Yields after each movement to allow animation.
+    """
         for i in range(1, len(self.bar_values)):
             current = self.bar_values[i]
             j = i - 1
@@ -79,6 +97,9 @@ class SortingVisualizer:
 
 # Merge sort
     def merge_sort(self):
+        """
+    Generator implementation of merge sort using recursion.
+    """
         yield from self.merge_sort_helper(0, len(self.bar_values) - 1)
         self.color_all_bars(BAR_DONE)
 
@@ -124,6 +145,10 @@ class SortingVisualizer:
             k += 1
 
     def quick_sort(self):
+        """
+    Generator implementation of quick sort using a pivot
+    and recursive partitioning.
+    """
         yield from self.quick_sort_helper(0, len(self.bar_values) - 1)
         self.color_all_bars(BAR_DONE)
 
@@ -155,6 +180,9 @@ class SortingVisualizer:
         return i
 
     def heap_sort(self):
+        """
+    Generator implementation of heap sort using a max heap.
+    """
         n = len(self.bar_values)
 
         #the heap
@@ -194,6 +222,10 @@ class SortingVisualizer:
 
 #sorting animation
     def begin_sort(self):
+        """
+    Starts the selected sorting algorithm and initializes
+    the animation process.
+    """
         self.sort_process=None
         self.color_all_bars(BAR_COLOR)
         selected = self.algorithm_choice.get()
@@ -210,6 +242,10 @@ class SortingVisualizer:
         self.animate_step()
 
     def animate_step(self):
+        """
+    Advances the sorting animation by one step using the
+    generator and schedules the next step.
+    """
         if self.sort_process:
             try:
                 next(self.sort_process)
@@ -219,6 +255,10 @@ class SortingVisualizer:
 
 #bars with randomized values
     def reset_bars(self):
+        """
+    Generates a new random dataset and redraws all bars.
+    Also resets any running sorting process.
+    """
         self.sort_process = None
         self.canvas.delete("all")
         self.bars = []
