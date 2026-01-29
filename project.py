@@ -11,228 +11,228 @@ BAR_COLOR = "#00BFFF"
 BAR_ACTIVE = "#FF4500"
 BAR_DONE = "#32CD32"
 
-bars = []
-bar_values = []
-sort_process = None  # This will be a generator when sorting
-
 ALGORITHMS = ["Insertion Sort", "Merge Sort", "Quick Sort", "Heap Sort"]
 
-def draw_bar(index, value, color):
-    x_start = index * bar_width
-    x_end = x_start + bar_width
-    y_end = HEIGHT
-    y_start = HEIGHT - value
-    canvas.coords(bars[index], x_start, y_start, x_end, y_end)
-    canvas.itemconfig(bars[index], fill=color)
+class SortingVisualizer:
+    def __init__(self):
+        self.bars = []
+        self.bar_values = []
+        self.sort_process = None
+        self.bar_width = 1
 
-def color_all_bars(color):
-    for idx in range(len(bar_values)):
-        draw_bar(idx, bar_values[idx], color)
+        self.root = tk.Tk()
+        self.root.title("Sorting Visualizer")
+
+        self.canvas = tk.Canvas(self.root, width=WIDTH, height=HEIGHT, bg="white")
+        self.canvas.pack()
+
+        self.controls = tk.Frame(self.root)
+        self.controls.pack()
+
+        tk.Button(self.controls, text="Generate", width=12, command=self.reset_bars).grid(row=0, column=0)
+
+        self.algorithm_choice = tk.StringVar()
+        self.algorithm_choice.set(ALGORITHMS[0])
+        tk.OptionMenu(self.controls, self.algorithm_choice, *ALGORITHMS).grid(row=0, column=1)
+
+        tk.Button(self.controls, text="Sort", width=12, command=self.begin_sort).grid(row=0, column=2)
+
+        self.size_slider = tk.Scale(self.controls, from_=10, to=80, orient=HORIZONTAL, label="Size")
+        self.size_slider.set(30)
+        self.size_slider.grid(row=1, column=0, columnspan=2)
+
+        self.speed_slider = tk.Scale(self.controls, from_=5, to=200, orient=HORIZONTAL, label="Speed")
+        self.speed_slider.set(30)
+        self.speed_slider.grid(row=1, column=2)
+
+        self.reset_bars()
+        self.root.mainloop()
+
+    def draw_bar(self,index, value, color):
+        x_start = index * self.bar_width
+        x_end = x_start + self.bar_width
+        y_end = HEIGHT
+        y_start = HEIGHT - value
+        self.canvas.coords(self.bars[index], x_start, y_start, x_end, y_end)
+        self.canvas.itemconfig(self.bars[index], fill=color)
+
+    def color_all_bars(self,color):
+        for idx in range(len(self.bar_values)):
+            self.draw_bar(idx, self.bar_values[idx], color)
 
 #insertion sort implementation
-def insertion_sort():
-    for i in range(1, len(bar_values)):
-        current = bar_values[i]
-        j = i - 1
-        while j >= 0 and bar_values[j] > current:
-            bar_values[j + 1] = bar_values[j]
-            draw_bar(j + 1, bar_values[j + 1], BAR_ACTIVE)
+    def insertion_sort(self):
+        for i in range(1, len(self.bar_values)):
+            current = self.bar_values[i]
+            j = i - 1
+            while j >= 0 and self.bar_values[j] > current:
+                self.bar_values[j + 1] = self.bar_values[j]
+                self.draw_bar(j + 1, self.bar_values[j + 1], BAR_ACTIVE)
+                yield
+                self.draw_bar(j + 1, self.bar_values[j + 1], BAR_COLOR)
+                j -= 1
+            self.bar_values[j + 1] = current
+            self.draw_bar(j + 1, current, BAR_ACTIVE)
             yield
-            draw_bar(j + 1, bar_values[j + 1], BAR_COLOR)
-            j -= 1
-        bar_values[j + 1] = current
-        draw_bar(j + 1, current, BAR_ACTIVE)
-        yield
-        draw_bar(j + 1, current, BAR_COLOR)
-    color_all_bars(BAR_DONE)
+            self.draw_bar(j + 1, current, BAR_COLOR)
+        self.color_all_bars(BAR_DONE)
 
 # Merge sort
-def merge_sort():
-    yield from merge_sort_helper(0, len(bar_values) - 1)
-    color_all_bars(BAR_DONE)
+    def merge_sort(self):
+        yield from self.merge_sort_helper(0, len(self.bar_values) - 1)
+        self.color_all_bars(BAR_DONE)
 
-def merge_sort_helper(left, right):
-    if left < right:
-        middle = (left + right) // 2
-        yield from merge_sort_helper(left, middle)
-        yield from merge_sort_helper(middle + 1, right)
-        yield from merge_subarrays(left, middle, right)
+    def merge_sort_helper(self,left, right):
+        if left < right:
+            middle = (left + right) // 2
+            yield from self.merge_sort_helper(left, middle)
+            yield from self.merge_sort_helper(middle + 1, right)
+            yield from self.merge_subarrays(left, middle, right)
 
-def merge_subarrays(left, mid, right):
-    left_part = bar_values[left:mid+1]
-    right_part = bar_values[mid+1:right+1]
+    def merge_subarrays(self,left, mid, right):
+        left_part = self.bar_values[left:mid+1]
+        right_part = self.bar_values[mid+1:right+1]
 
-    i = j = 0
-    k = left
-    while i < len(left_part) and j < len(right_part):
-        if left_part[i] <= right_part[j]:
-            bar_values[k] = left_part[i]
-            i += 1
-        else:
-            bar_values[k] = right_part[j]
-            j += 1
-        draw_bar(k, bar_values[k], BAR_ACTIVE)
-        yield
-        draw_bar(k, bar_values[k], BAR_COLOR)
-        k += 1
-
-    while i < len(left_part):
-        bar_values[k] = left_part[i]
-        draw_bar(k, bar_values[k], BAR_ACTIVE)
-        yield
-        draw_bar(k, bar_values[k], BAR_COLOR)
-        i += 1
-        k += 1
-
-    while j < len(right_part):
-        bar_values[k] = right_part[j]
-        draw_bar(k, bar_values[k], BAR_ACTIVE)
-        yield
-        draw_bar(k, bar_values[k], BAR_COLOR)
-        j += 1
-        k += 1
-
-def quick_sort():
-    yield from quick_sort_helper(0, len(bar_values) - 1)
-    color_all_bars(BAR_DONE)
-
-def quick_sort_helper(low, high):
-    if low < high:
-        pivot_index = yield from partition(low, high)
-        yield from quick_sort_helper(low, pivot_index - 1)
-        yield from quick_sort_helper(pivot_index + 1, high)
-
-def partition(low, high):
-    pivot_val = bar_values[high]
-    i = low
-    for j in range(low, high):
-        if bar_values[j] <= pivot_val:
-            bar_values[i], bar_values[j] = bar_values[j], bar_values[i]
-            draw_bar(i, bar_values[i], BAR_ACTIVE)
-            draw_bar(j, bar_values[j], BAR_ACTIVE)
+        i = j = 0
+        k = left
+        while i < len(left_part) and j < len(right_part):
+            if left_part[i] <= right_part[j]:
+                self.bar_values[k] = left_part[i]
+                i += 1
+            else:
+                self.bar_values[k] = right_part[j]
+                j += 1
+            self.draw_bar(k, self.bar_values[k], BAR_ACTIVE)
             yield
-            draw_bar(i, bar_values[i], BAR_COLOR)
-            draw_bar(j, bar_values[j], BAR_COLOR)
+            self.draw_bar(k, self.bar_values[k], BAR_COLOR)
+            k += 1
+
+        while i < len(left_part):
+            self.bar_values[k] = left_part[i]
+            self.draw_bar(k, self.bar_values[k], BAR_ACTIVE)
+            yield
+            self.draw_bar(k, self.bar_values[k], BAR_COLOR)
             i += 1
+            k += 1
 
-    bar_values[i], bar_values[high] = bar_values[high], bar_values[i]
-    draw_bar(i, bar_values[i], BAR_ACTIVE)
-    draw_bar(high, bar_values[high], BAR_ACTIVE)
-    yield
-    draw_bar(i, bar_values[i], BAR_COLOR)
-    draw_bar(high, bar_values[high], BAR_COLOR)
-    return i
+        while j < len(right_part):
+            self.bar_values[k] = right_part[j]
+            self.draw_bar(k, self.bar_values[k], BAR_ACTIVE)
+            yield
+            self.draw_bar(k, self.bar_values[k], BAR_COLOR)
+            j += 1
+            k += 1
 
-def heap_sort():
-    n = len(bar_values)
+    def quick_sort(self):
+        yield from self.quick_sort_helper(0, len(self.bar_values) - 1)
+        self.color_all_bars(BAR_DONE)
 
-    #the heap
-    for i in range(n // 2 - 1, -1, -1):
-        yield from heapify(n, i)
+    def quick_sort_helper(self,low, high):
+        if low < high:
+            pivot_index = yield from self.partition(low, high)
+            yield from self.quick_sort_helper(low, pivot_index - 1)
+            yield from self.quick_sort_helper(pivot_index + 1, high)
+
+    def partition(self,low, high):
+        pivot_val = self.bar_values[high]
+        i = low
+        for j in range(low, high):
+            if self.bar_values[j] <= pivot_val:
+                self.bar_values[i], self.bar_values[j] = self.bar_values[j], self.bar_values[i]
+                self.draw_bar(i, self.bar_values[i], BAR_ACTIVE)
+                self.draw_bar(j, self.bar_values[j], BAR_ACTIVE)
+                yield
+                self.draw_bar(i, self.bar_values[i], BAR_COLOR)
+                self.draw_bar(j, self.bar_values[j], BAR_COLOR)
+                i += 1
+
+        self.bar_values[i], self.bar_values[high] = self.bar_values[high], self.bar_values[i]
+        self.draw_bar(i, self.bar_values[i], BAR_ACTIVE)
+        self.draw_bar(high, self.bar_values[high], BAR_ACTIVE)
+        yield
+        self.draw_bar(i, self.bar_values[i], BAR_COLOR)
+        self.draw_bar(high, self.bar_values[high], BAR_COLOR)
+        return i
+
+    def heap_sort(self):
+        n = len(self.bar_values)
+
+        #the heap
+        for i in range(n // 2 - 1, -1, -1):
+            yield from self.heapify(n, i)
 
     # Extracting elements one by one
-    for end in range(n - 1, 0, -1):
-        bar_values[0], bar_values[end] = bar_values[end], bar_values[0]
-        draw_bar(0, bar_values[0], BAR_ACTIVE)
-        draw_bar(end, bar_values[end], BAR_ACTIVE)
-        yield
-        draw_bar(0, bar_values[0], BAR_COLOR)
-        draw_bar(end, bar_values[end], BAR_COLOR)
-        yield from heapify(end, 0)
+        for end in range(n - 1, 0, -1):
+            self.bar_values[0], self.bar_values[end] = self.bar_values[end], self.bar_values[0]
+            self.draw_bar(0, self.bar_values[0], BAR_ACTIVE)
+            self.draw_bar(end, self.bar_values[end], BAR_ACTIVE)
+            yield
+            self.draw_bar(0, self.bar_values[0], BAR_COLOR)
+            self.draw_bar(end, self.bar_values[end], BAR_COLOR)
+            yield from self.heapify(end, 0)
 
-    color_all_bars(BAR_DONE)
+        self.color_all_bars(BAR_DONE)
 
-def heapify(size, root):
-    largest = root
-    left = 2 * root + 1
-    right = 2 * root + 2
+    def heapify(self,size, root):
+        largest = root
+        left = 2 * root + 1
+        right = 2 * root + 2
 
-    if left < size and bar_values[left] > bar_values[largest]:
-        largest = left
-    if right < size and bar_values[right] > bar_values[largest]:
-        largest = right
+        if left < size and self.bar_values[left] > self.bar_values[largest]:
+            largest = left
+        if right < size and self.bar_values[right] > self.bar_values[largest]:
+            largest = right
 
-    if largest != root:
-        bar_values[root], bar_values[largest] = bar_values[largest], bar_values[root]
-        draw_bar(root, bar_values[root], BAR_ACTIVE)
-        draw_bar(largest, bar_values[largest], BAR_ACTIVE)
-        yield
-        draw_bar(root, bar_values[root], BAR_COLOR)
-        draw_bar(largest, bar_values[largest], BAR_COLOR)
-        yield from heapify(size, largest)
+        if largest != root:
+            self.bar_values[root], self.bar_values[largest] = self.bar_values[largest], self.bar_values[root]
+            self.draw_bar(root, self.bar_values[root], BAR_ACTIVE)
+            self.draw_bar(largest, self.bar_values[largest], BAR_ACTIVE)
+            yield
+            self.draw_bar(root, self.bar_values[root], BAR_COLOR)
+            self.draw_bar(largest, self.bar_values[largest], BAR_COLOR)
+            yield from self.heapify(size, largest)
 
 #sorting animation
-def begin_sort():
-    global sort_process
-    color_all_bars(BAR_COLOR)
-    selected = algorithm_choice.get()
+    def begin_sort(self):
+        self.sort_process=None
+        self.color_all_bars(BAR_COLOR)
+        selected = self.algorithm_choice.get()
 
-    if selected == "Insertion Sort":
-        sort_process = insertion_sort()
-    elif selected == "Merge Sort":
-        sort_process = merge_sort()
-    elif selected == "Quick Sort":
-        sort_process = quick_sort()
-    else:
-        sort_process = heap_sort()
-    animate_step()
+        if selected == "Insertion Sort":
+            self.sort_process = self.insertion_sort()
+        elif selected == "Merge Sort":
+            self.sort_process = self.merge_sort()
+        elif selected == "Quick Sort":
+            self.sort_process = self.quick_sort()
+        else:
+            self.sort_process = self.heap_sort()
 
-def animate_step():
-    global sort_process
-    if sort_process:
-        try:
-            next(sort_process)
-            root.after(speed_slider.get(), animate_step)
-        except StopIteration:
-            sort_process = None
+        self.animate_step()
+
+    def animate_step(self):
+        if self.sort_process:
+            try:
+                next(self.sort_process)
+                self.root.after(self.speed_slider.get(), self.animate_step)
+            except StopIteration:
+                self.sort_process = None
 
 #bars with randomized values
-def reset_bars():
-    global bars, bar_values, bar_width, sort_process
-    sort_process = None
-    canvas.delete("all")
-    bars = []
-    bar_values = []
+    def reset_bars(self):
+        self.sort_process = None
+        self.canvas.delete("all")
+        self.bars = []
+        self.bar_values = []
 
-    num_bars = size_slider.get()
-    bar_width = WIDTH // num_bars
-    data = list(range(1, num_bars + 1))
-    random.shuffle(data)
+        num_bars = self.size_slider.get()
+        self.bar_width = WIDTH // num_bars
+        data = list(range(1, num_bars + 1))
+        random.shuffle(data)
 
-    for i, val in enumerate(data):
-        height = val * (HEIGHT // num_bars)  #scaling factor
-        bar_values.append(height)
-        bars.append(canvas.create_rectangle(0, 0, 0, 0, fill=BAR_COLOR))
-        draw_bar(i, height, BAR_COLOR)
-
-# GUI setup
-root = tk.Tk()
-root.title("Sorting Visualizer")
-
-canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="white")
-canvas.pack()
-
-controls = tk.Frame(root)
-controls.pack()
-
-#new dataset
-tk.Button(controls, text="Generate", width=12, command=reset_bars).grid(row=0, column=0)
-
-algorithm_choice = tk.StringVar()
-algorithm_choice.set(ALGORITHMS[0])
-tk.OptionMenu(controls, algorithm_choice, *ALGORITHMS).grid(row=0, column=1)
-
-# sorting begin
-tk.Button(controls, text="Sort", width=12, command=begin_sort).grid(row=0, column=2)
-
-# size and speed sliders
-size_slider = tk.Scale(controls, from_=10, to=80, orient=HORIZONTAL, label="Size")
-size_slider.set(30)
-size_slider.grid(row=1, column=0, columnspan=2)
-
-speed_slider = tk.Scale(controls, from_=5, to=200, orient=HORIZONTAL, label="Speed")
-speed_slider.set(30)
-speed_slider.grid(row=1, column=2)
-
-reset_bars()
-root.mainloop()
+        for i, val in enumerate(data):
+            height = val * (HEIGHT // num_bars)  #scaling factor
+            self.bar_values.append(height)
+            self.bars.append(self.canvas.create_rectangle(0, 0, 0, 0, fill=BAR_COLOR))
+            self.draw_bar(i, height, BAR_COLOR)
+        
+SortingVisualizer()    
